@@ -3,6 +3,7 @@ import { useItemsContext } from "../hooks/useItemsContext"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { Link } from 'react-router-dom'
 import ItemDetails from '../components/ItemDetails'
+import API_URL from '../config/api.js'
 
 const Home = () => {
   const {items, dispatch} = useItemsContext()
@@ -10,7 +11,7 @@ const Home = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      const response = await fetch('/api/items', {
+      const response = await fetch(`${API_URL}/api/items`, {
         headers: {'Authorization': `Bearer ${user.token}`},
       })
       const json = await response.json()

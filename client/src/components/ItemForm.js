@@ -3,6 +3,7 @@ import { useItemsContext } from "../hooks/useItemsContext"
 import { useAuthContext } from '../hooks/useAuthContext'
 import { useNavigate } from 'react-router-dom'
 import Modal from './Modal'
+import API_URL from '../config/api.js'
 
 export const ItemForm = ({ type, onBack }) => {
   const { dispatch } = useItemsContext()
@@ -306,7 +307,7 @@ export const ItemForm = ({ type, onBack }) => {
       formData.append('type', type)
       formData.append('recipients', JSON.stringify(recipients))
       
-      const response = await fetch('/api/items', {
+      const response = await fetch(`${API_URL}/api/items`, {
         method: 'POST',
         body: formData,
         headers: {

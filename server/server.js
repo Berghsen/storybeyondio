@@ -13,7 +13,12 @@ const cloudinary = require('./config/cloudinary')
 const app = express()
 
 // middleware
-app.use(cors())
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.CLIENT_URL // You'll need to set this in your server's environment variables
+    : 'http://localhost:3000',
+  credentials: true
+}))
 app.use(express.json())
 
 app.use((req, res, next) => {

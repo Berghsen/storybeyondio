@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useItemsContext } from '../hooks/useItemsContext'
 import { useAuthContext } from '../hooks/useAuthContext'
+import API_URL from '../config/api.js'
 
 const EditRecipientModal = ({ isOpen, onClose, item }) => {
   const { dispatch } = useItemsContext()
@@ -22,7 +23,7 @@ const EditRecipientModal = ({ isOpen, onClose, item }) => {
         }
       }
 
-      const response = await fetch('/api/items/' + item._id, {
+      const response = await fetch(`${API_URL}/api/items/${item._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

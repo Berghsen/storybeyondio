@@ -4,6 +4,7 @@ import { useAuthContext } from '../hooks/useAuthContext'
 import formatDistanceToNow from 'date-fns/formatDistanceToNow'
 import Lightbox from 'yet-another-react-lightbox'
 import "yet-another-react-lightbox/styles.css"
+import API_URL from '../config/api.js'
 
 const ItemDetails = ({ item }) => {
   const { dispatch } = useItemsContext()
@@ -14,7 +15,7 @@ const ItemDetails = ({ item }) => {
   const handleDelete = async () => {
     if (!user) return
 
-    const response = await fetch('/api/items/' + item._id, {
+    const response = await fetch(`${API_URL}/api/items/${item._id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${user.token}`
