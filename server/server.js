@@ -13,12 +13,17 @@ const cloudinary = require('./config/cloudinary')
 const app = express()
 
 // middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL // You'll need to set this in your server's environment variables
-    : 'http://localhost:3000',
-  credentials: true
-}))
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://storybeyondio.onrender.com']
+    : ['http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json())
 
 app.use((req, res, next) => {
