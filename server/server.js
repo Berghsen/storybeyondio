@@ -12,18 +12,27 @@ const cloudinary = require('./config/cloudinary')
 // express app
 const app = express()
 
-// middleware
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://storybeyondio.onrender.com']
-    : ['http://localhost:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
-};
+// CORS middleware configuration
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', process.env.NODE_ENV === 'production' 
+    ? 'https://storybeyondio.onrender.com' 
+    : 'http://localhost:3000'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).json({
+      body: "OK"
+    });
+  }
+  
+  next();
+});
 
-app.use(cors(corsOptions));
+// Regular middleware
 app.use(express.json())
 
 app.use((req, res, next) => {
