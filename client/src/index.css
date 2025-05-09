@@ -40,7 +40,7 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 10px;
 }
 
 nav a {
@@ -76,7 +76,7 @@ nav a {
 
 /* Dashboard layout */
 .dashboard {
-  padding: 40px 0;
+  padding: 20px 10px;
 }
 
 .dashboard-header {
@@ -134,8 +134,29 @@ nav a {
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  padding: 10px;
+}
+
+@media (min-width: 480px) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .items-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .items-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .items-list {
@@ -149,24 +170,19 @@ nav a {
   background: var(--bg-card);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
+  width: 100%;
 }
 
 .item-details:hover {
   transform: translateY(-5px);
 }
 
-.item-image-container img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  cursor: pointer;
-}
-
+.item-image-container img,
 .item-video-container video {
   width: 100%;
-  height: 180px;
+  aspect-ratio: 16/9;
   object-fit: cover;
 }
 
@@ -212,7 +228,8 @@ nav a {
 
 /* Audio player styles */
 .audio-player {
-  padding: 15px;
+  width: 100%;
+  padding: 10px;
 }
 
 .audio-info {
@@ -228,8 +245,7 @@ nav a {
 /* Custom audio player styling */
 audio {
   width: 100%;
-  height: 36px;
-  margin: 0;
+  margin: 10px 0;
 }
 
 audio::-webkit-media-controls-panel {
@@ -547,14 +563,14 @@ nav .logout-button {
   align-items: flex-start;
   margin-bottom: 16px;
   background: var(--bg-card);
-  padding: 16px;
+  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .recipient-fields {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   flex: 1;
 }
 
@@ -745,10 +761,12 @@ nav .logout-button {
 .modal-content {
   background: var(--bg-dark);
   border-radius: 12px;
-  padding: 24px;
-  width: 90%;
+  padding: 16px;
+  width: 95%;
   max-width: 500px;
-  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 10px;
 }
 
 .modal-header {
@@ -908,11 +926,13 @@ nav .logout-button {
   background: #000;
   border-radius: 8px;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
   .video-preview-container {
     aspect-ratio: 16/9;
+    max-width: 640px;
   }
 }
 
@@ -983,8 +1003,11 @@ nav .logout-button {
 button, 
 .primary-button, 
 .secondary-button {
-  min-height: 44px;
+  min-height: 48px;
+  min-width: 48px;
   padding: 12px 20px;
+  font-size: 16px;
+  touch-action: manipulation;
 }
 
 /* Improve input touch targets */
@@ -1019,4 +1042,195 @@ input {
 .loading-overlay p {
   text-align: center;
   margin-top: 16px;
+}
+
+/* Add/update these styles */
+
+/* Mobile-first base styles */
+@media (min-width: 768px) {
+  .dashboard {
+    padding: 40px 20px;
+  }
+}
+
+/* Improve items grid for mobile */
+.items-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  padding: 10px;
+}
+
+@media (min-width: 480px) {
+  .items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .items-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .items-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Improve item cards on mobile */
+.item-details {
+  background: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  width: 100%;
+}
+
+.item-image-container img,
+.item-video-container video {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+/* Improve modal for mobile */
+.modal-content {
+  background: var(--bg-dark);
+  border-radius: 12px;
+  padding: 16px;
+  width: 95%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 10px;
+}
+
+/* Video recording improvements */
+.video-preview-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9/16;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .video-preview-container {
+    aspect-ratio: 16/9;
+    max-width: 640px;
+  }
+}
+
+.recording-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Permission denied message */
+.permission-denied-message {
+  text-align: center;
+  padding: 20px;
+  margin: 20px 0;
+  background: rgba(255, 82, 82, 0.1);
+  border-radius: 8px;
+  border: 1px solid var(--error);
+}
+
+.permission-denied-message p {
+  color: var(--error);
+  margin-bottom: 15px;
+}
+
+/* Improve recording controls for mobile */
+.recording-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+@media (min-width: 768px) {
+  .recording-controls {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* Make buttons more touch-friendly */
+.primary-button,
+.secondary-button,
+.camera-toggle-button {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 12px 20px;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+/* Improve navigation for mobile */
+nav {
+  padding: 10px;
+}
+
+@media (min-width: 768px) {
+  nav {
+    padding: 15px 20px;
+  }
+}
+
+/* Improve form layout on mobile */
+.create-form {
+  padding: 15px;
+  margin: 10px;
+}
+
+@media (min-width: 768px) {
+  .create-form {
+    padding: 30px;
+    margin: 40px auto;
+    max-width: 800px;
+  }
+}
+
+/* Improve recipient fields on mobile */
+.recipient-group {
+  flex-direction: column;
+  padding: 15px;
+}
+
+.recipient-fields {
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .recipient-group {
+    flex-direction: row;
+    padding: 20px;
+  }
+
+  .recipient-fields {
+    flex-direction: row;
+    gap: 16px;
+  }
+}
+
+/* Audio player improvements */
+.audio-player {
+  width: 100%;
+  padding: 10px;
+}
+
+audio {
+  width: 100%;
+  margin: 10px 0;
 }

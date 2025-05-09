@@ -138,6 +138,7 @@ export const ItemForm = ({ type, onBack }) => {
 
   const startRecording = async () => {
     try {
+      // Request permissions immediately when starting recording
       const constraints = {
         audio: true,
         video: type === 'video' ? {
@@ -146,14 +147,20 @@ export const ItemForm = ({ type, onBack }) => {
           height: { ideal: window.innerWidth < 768 ? 1280 : 720 }
         } : false
       };
-      
+
+      // First try to get permissions
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       mediaStream.current = stream;
-      
+      setPermissionDenied(false); // Reset permission denied state if successful
+
       if (videoPreviewRef.current) {
         videoPreviewRef.current.srcObject = stream;
-        videoPreviewRef.current.playsInline = true; // Important for iOS
-        await videoPreviewRef.current.play();
+        videoPreviewRef.current.playsInline = true;
+        try {
+          await videoPreviewRef.current.play();
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+        }
       }
       
       mediaChunks.current = []
@@ -202,7 +209,7 @@ export const ItemForm = ({ type, onBack }) => {
       console.error('Recording error:', error);
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
         setPermissionDenied(true);
-        setError('Please allow access to your camera and microphone to record.');
+        setError('Please allow access to your camera and microphone in your browser settings.');
       } else {
         setError(`Could not start recording: ${error.message}`);
       }
@@ -477,36 +484,27 @@ export const ItemForm = ({ type, onBack }) => {
                 muted
                 className="recording-preview-video"
               />
-              <button 
-                className="camera-toggle-button"
-                onClick={toggleCamera}
-                type="button"
-              >
-                <span className="material-symbols-outlined">flip_camera_ios</span>
-              </button>
-            </div>
-            <div className="recording-controls">
-              {permissionDenied ? (
-                <button
-                  className="primary-button"
-                  onClick={requestPermissions}
+              {!permissionDenied && (
+                <button 
+                  className="camera-toggle-button"
+                  onClick={toggleCamera}
                   type="button"
                 >
-                  <span className="material-symbols-outlined">videocam</span>
-                  Allow Camera Access
-                </button>
-              ) : (
-                <button
-                  className={`primary-button ${isRecording ? 'recording' : ''}`}
-                  onClick={isRecording ? handleStopRecording : startRecording}
-                  type="button"
-                >
-                  <span className="material-symbols-outlined">
-                    {isRecording ? 'stop' : 'videocam'}
-                  </span>
-                  {isRecording ? 'Stop Recording' : 'Start Recording'}
+                  <span className="material-symbols-outlined">flip_camera_ios</span>
                 </button>
               )}
+            </div>
+            <div className="recording-controls">
+              <button
+                className={`primary-button ${isRecording ? 'recording' : ''}`}
+                onClick={isRecording ? handleStopRecording : startRecording}
+                type="button"
+              >
+                <span className="material-symbols-outlined">
+                  {isRecording ? 'stop' : 'videocam'}
+                </span>
+                {isRecording ? 'Stop Recording' : 'Start Recording'}
+              </button>
               {isRecording && (
                 <div className="recording-status">
                   <div className="recording-indicator"></div>
@@ -514,6 +512,19 @@ export const ItemForm = ({ type, onBack }) => {
                 </div>
               )}
             </div>
+            {permissionDenied && (
+              <div className="permission-denied-message">
+                <p>Camera access was denied. Please check your browser settings to enable camera access.</p>
+                <button
+                  className="secondary-button"
+                  onClick={() => window.location.reload()}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">refresh</span>
+                  Try Again
+                </button>
+              </div>
+            )}
           </>
         ) : (
           <div className="recording-preview">
