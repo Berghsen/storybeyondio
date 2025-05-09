@@ -870,3 +870,153 @@ nav .logout-button {
 .item-recipient:hover {
   color: var(--primary);
 }
+
+/* Mobile-first responsive styles */
+@media (max-width: 768px) {
+  .create-form {
+    padding: 15px;
+  }
+
+  .recipient-group {
+    flex-direction: column;
+  }
+
+  .recipient-fields {
+    flex-direction: column;
+  }
+
+  .remove-recipient-button {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+
+  .recording-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .upload-options {
+    flex-direction: column;
+  }
+}
+
+/* Video recording styles */
+.video-preview-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9/16;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .video-preview-container {
+    aspect-ratio: 16/9;
+  }
+}
+
+.recording-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-toggle-button {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+.camera-toggle-button:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.recording-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+
+.recording-indicator {
+  width: 12px;
+  height: 12px;
+  background: var(--error);
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Permission request styling */
+.permission-request {
+  text-align: center;
+  padding: 20px;
+  background: var(--bg-dark);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.permission-request p {
+  margin-bottom: 15px;
+  color: var(--text-secondary);
+}
+
+/* Make buttons more touch-friendly */
+button, 
+.primary-button, 
+.secondary-button {
+  min-height: 44px;
+  padding: 12px 20px;
+}
+
+/* Improve input touch targets */
+input {
+  min-height: 44px;
+}
+
+/* Modal improvements for mobile */
+.modal-content {
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+@media (max-width: 768px) {
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* Loading overlay improvements */
+.loading-overlay {
+  padding: 20px;
+}
+
+.loading-overlay p {
+  text-align: center;
+  margin-top: 16px;
+}

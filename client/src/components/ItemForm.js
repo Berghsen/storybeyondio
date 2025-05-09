@@ -34,21 +34,44 @@ export const ItemForm = ({ type, onBack }) => {
   const [recordedAudio, setRecordedAudio] = useState(null)
   const [isAudioModalOpen, setIsAudioModalOpen] = useState(false)
 
+  // Add new state variables
+  const [permissionDenied, setPermissionDenied] = useState(false)
+  const [facingMode, setFacingMode] = useState('user')
+
   useEffect(() => {
     const checkDevices = async () => {
       try {
-        const devices = await navigator.mediaDevices.enumerateDevices()
-        setHasWebcam(devices.some(device => device.kind === 'videoinput'))
-        setHasMicrophone(devices.some(device => device.kind === 'audioinput'))
+        // First check permissions API
+        if (navigator.permissions && navigator.permissions.query) {
+          const cameraResult = type === 'video' ? 
+            await navigator.permissions.query({ name: 'camera' }) : null;
+          const microphoneResult = await navigator.permissions.query({ name: 'microphone' });
+
+          if (cameraResult) {
+            cameraResult.addEventListener('change', () => {
+              setHasWebcam(cameraResult.state === 'granted');
+              setPermissionDenied(cameraResult.state === 'denied');
+            });
+          }
+
+          microphoneResult.addEventListener('change', () => {
+            setHasMicrophone(microphoneResult.state === 'granted');
+            setPermissionDenied(microphoneResult.state === 'denied');
+          });
+        }
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        setHasWebcam(devices.some(device => device.kind === 'videoinput'));
+        setHasMicrophone(devices.some(device => device.kind === 'audioinput'));
       } catch (err) {
-        console.error('Error checking media devices:', err)
-        setHasWebcam(false)
-        setHasMicrophone(false)
+        console.error('Error checking media devices:', err);
+        setHasWebcam(false);
+        setHasMicrophone(false);
       }
-    }
+    };
     
-    checkDevices()
-  }, [])
+    checkDevices();
+  }, [type]);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
@@ -117,18 +140,20 @@ export const ItemForm = ({ type, onBack }) => {
     try {
       const constraints = {
         audio: true,
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      }
+        video: type === 'video' ? {
+          facingMode: facingMode,
+          width: { ideal: window.innerWidth < 768 ? 720 : 1280 },
+          height: { ideal: window.innerWidth < 768 ? 1280 : 720 }
+        } : false
+      };
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints)
-      mediaStream.current = stream
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      mediaStream.current = stream;
       
       if (videoPreviewRef.current) {
-        videoPreviewRef.current.srcObject = stream
-        await videoPreviewRef.current.play()
+        videoPreviewRef.current.srcObject = stream;
+        videoPreviewRef.current.playsInline = true; // Important for iOS
+        await videoPreviewRef.current.play();
       }
       
       mediaChunks.current = []
@@ -174,8 +199,13 @@ export const ItemForm = ({ type, onBack }) => {
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (error) {
-      console.error('Recording error:', error)
-      setError(`Could not access camera: ${error.message}`)
+      console.error('Recording error:', error);
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        setPermissionDenied(true);
+        setError('Please allow access to your camera and microphone to record.');
+      } else {
+        setError(`Could not start recording: ${error.message}`);
+      }
     }
   }
 
@@ -368,6 +398,55 @@ export const ItemForm = ({ type, onBack }) => {
     })
   }, [])
 
+  // Add permission request function
+  const requestPermissions = async () => {
+    try {
+      const constraints = {
+        audio: true,
+        video: type === 'video'
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach(track => track.stop());
+      setPermissionDenied(false);
+      startRecording();
+    } catch (error) {
+      console.error('Permission request error:', error);
+      setPermissionDenied(true);
+      setError('Could not access your camera/microphone. Please check your browser settings.');
+    }
+  };
+
+  // Add camera toggle function
+  const toggleCamera = async () => {
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newFacingMode);
+    
+    if (mediaStream.current) {
+      mediaStream.current.getTracks().forEach(track => track.stop());
+    }
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: {
+          facingMode: newFacingMode,
+          width: { ideal: window.innerWidth < 768 ? 720 : 1280 },
+          height: { ideal: window.innerWidth < 768 ? 1280 : 720 }
+        }
+      });
+      
+      mediaStream.current = stream;
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+        await videoPreviewRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error toggling camera:', error);
+      setError('Failed to switch camera. Please try again.');
+    }
+  };
+
   const styles = {
     videoPreview: {
       width: '100%',
@@ -379,6 +458,92 @@ export const ItemForm = ({ type, onBack }) => {
       transform: 'scaleX(-1)' // Mirror the preview
     }
   }
+
+  // Update the JSX for the video recording modal
+  const renderVideoRecordingModal = () => (
+    <Modal
+      isOpen={isRecordingModalOpen}
+      onClose={handleCloseRecordingModal}
+      title="Record Video"
+    >
+      <div className="recording-modal-content">
+        {!recordedVideo ? (
+          <>
+            <div className="video-preview-container">
+              <video
+                ref={videoPreviewRef}
+                autoPlay
+                playsInline
+                muted
+                className="recording-preview-video"
+              />
+              <button 
+                className="camera-toggle-button"
+                onClick={toggleCamera}
+                type="button"
+              >
+                <span className="material-symbols-outlined">flip_camera_ios</span>
+              </button>
+            </div>
+            <div className="recording-controls">
+              {permissionDenied ? (
+                <button
+                  className="primary-button"
+                  onClick={requestPermissions}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">videocam</span>
+                  Allow Camera Access
+                </button>
+              ) : (
+                <button
+                  className={`primary-button ${isRecording ? 'recording' : ''}`}
+                  onClick={isRecording ? handleStopRecording : startRecording}
+                  type="button"
+                >
+                  <span className="material-symbols-outlined">
+                    {isRecording ? 'stop' : 'videocam'}
+                  </span>
+                  {isRecording ? 'Stop Recording' : 'Start Recording'}
+                </button>
+              )}
+              {isRecording && (
+                <div className="recording-status">
+                  <div className="recording-indicator"></div>
+                  <span>Recording: {formatTime(recordingTime)}</span>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="recording-preview">
+            <video 
+              src={recordedVideo.url}
+              controls
+              playsInline
+              className="recording-preview-video"
+            />
+            <div className="recording-actions">
+              <button 
+                className="primary-button"
+                onClick={handleAcceptRecording}
+              >
+                <span className="material-symbols-outlined">check</span>
+                Use This Recording
+              </button>
+              <button 
+                className="secondary-button"
+                onClick={handleRecordAgain}
+              >
+                <span className="material-symbols-outlined">refresh</span>
+                Record Again
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
 
   return (
     <form className="create-form" onSubmit={handleSubmit}>
@@ -499,68 +664,7 @@ export const ItemForm = ({ type, onBack }) => {
               style={{ display: 'none' }}
             />
             
-            <Modal
-              isOpen={isRecordingModalOpen}
-              onClose={handleCloseRecordingModal}
-              title="Record Video"
-            >
-              <div className="recording-modal-content">
-                {!recordedVideo ? (
-                  <>
-                    <video
-                      ref={videoPreviewRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="recording-preview-video"
-                    />
-                    <div className="recording-controls">
-                      <button
-                        className={`primary-button ${isRecording ? 'recording' : ''}`}
-                        onClick={isRecording ? handleStopRecording : startRecording}
-                        type="button"
-                      >
-                        <span className="material-symbols-outlined">
-                          {isRecording ? 'stop' : 'videocam'}
-                        </span>
-                        {isRecording ? 'Stop Recording' : 'Start Recording'}
-                      </button>
-                      {isRecording && (
-                        <div className="recording-status">
-                          <div className="recording-indicator"></div>
-                          <span>Recording: {formatTime(recordingTime)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="recording-preview">
-                    <video 
-                      src={recordedVideo.url}
-                      controls
-                      autoPlay
-                      className="recording-preview-video"
-                    />
-                    <div className="recording-actions">
-                      <button 
-                        className="primary-button"
-                        onClick={handleAcceptRecording}
-                      >
-                        <span className="material-symbols-outlined">check</span>
-                        Use This Recording
-                      </button>
-                      <button 
-                        className="secondary-button"
-                        onClick={handleRecordAgain}
-                      >
-                        <span className="material-symbols-outlined">refresh</span>
-                        Record Again
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Modal>
+            {renderVideoRecordingModal()}
             
             {previewUrl && !isRecordingModalOpen && (
               <div className="media-preview">
